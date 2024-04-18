@@ -261,6 +261,10 @@ export class QdrantVectorStore implements VectorStore {
     query: VectorStoreQuery,
     options?: any,
   ): Promise<VectorStoreQueryResult> {
+    const searchParams = query?.filters?.searchParams;
+
+    if (searchParams) delete query.filters.searchParams;
+    
     const qdrantFilters = options?.qdrant_filters;
 
     let queryFilters;
@@ -278,6 +282,7 @@ export class QdrantVectorStore implements VectorStore {
     const result = (await this.db.search(this.collectionName, {
       vector: query.queryEmbedding,
       limit: query.similarityTopK,
+      ...(searchParams && { params: searchParams }),
       ...(queryFilters && { filter: queryFilters }),
     })) as Array<QuerySearchResult>;
 
